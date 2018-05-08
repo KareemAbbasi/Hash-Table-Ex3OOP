@@ -1,9 +1,11 @@
 public class ClosedHashSet extends SimpleHashSet{
 
     String[] hashTable;
+    int tableSize;
 
     public ClosedHashSet(){
-        hashTable = new String[INITIAL_CAPACITY];
+        hashTable = new String[DEFAULT_CAPACITY];
+        tableSize = 0;
         upperLoadFactor = DEFAULT_UPPER_LOAD_FACTOR;
         lowerLoadFactor = DEFAULT_LOWER_LOAD_FACTOR;
 
@@ -40,6 +42,10 @@ public class ClosedHashSet extends SimpleHashSet{
     @Override
     public int size() {
         return 0;
+    }
+
+    public void upscaleTable(){
+
     }
 
 
