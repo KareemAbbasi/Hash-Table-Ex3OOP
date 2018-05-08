@@ -2,6 +2,7 @@ public class ClosedHashSet extends SimpleHashSet{
 
     String[] hashTable;
     int tableSize;
+    float loadFactor = tableSize/capacity;
 
     public ClosedHashSet(){
         hashTable = new String[DEFAULT_CAPACITY];
@@ -23,20 +24,67 @@ public class ClosedHashSet extends SimpleHashSet{
             add(data[i]);
         }
     }
+    public int clamp(String value, int i) {
+        return (value.hashCode()+(i + i*i)/2)&(capacity - 1);
+    }
+    private int findIndex(String value){
+        for (int i =0; i<hashTable.length; i++){
+            int index = clamp(value, i);
+            if(hashTable[index] == null || index > getCapacity()) {
+                return -1;
+            } else if (hashTable[index].equals(value)){
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    private int emptyIndex(String value, String[] table){
+        int index = clamp(value, 0);
+        for (int i=0; i< table.length; i++){
+            index = clamp(value ,i);
+            if (table[index] == null || table[index].equals("")){
+                return index;
+            }
+        }
+        return index;
+    }
 
     @Override
     public boolean add(String newValue) {
-        return false;
+        if (contains(newValue)){
+            return false;
+        }
+
+        if (upperLoadFactor < loadFactor){
+            biggerTable();
+        }
+        int newValueIndex = emptyIndex(newValue, hashTable);
+        hashTable[newValueIndex] = newValue;
+        tableSize++;
+
+        return true;
     }
 
     @Override
     public boolean contains(String searchVal) {
-        return false;
+        int searchValIndex = findIndex(searchVal);
+        return (searchValIndex != -1);
     }
 
     @Override
     public boolean delete(String toDelete) {
-        return false;
+        int toDeleteIndex = findIndex(toDelete);
+        if (toDeleteIndex == -1){
+            return false;
+        }
+        hashTable[toDeleteIndex] = "";
+        tableSize --;
+
+        if (getLowerLoadFactor() > loadFactor){
+            smallerTable();
+        }
+        return true;
     }
 
     @Override
@@ -44,8 +92,26 @@ public class ClosedHashSet extends SimpleHashSet{
         return 0;
     }
 
-    public void upscaleTable(){
+    public void biggerTable(){
+        increaseTableCapacity();
+        String[] biggerHashTable = new String[getCapacity()];
+        for (int i=0; i<hashTable.length; i++){
+            if (!(hashTable[i] == null || hashTable[i].equals(""))){
+                biggerHashTable[emptyIndex(hashTable[i], biggerHashTable)] = hashTable[i];
+            }
+        }
+        hashTable = biggerHashTable;
+    }
 
+    public void smallerTable(){
+        decreaseTableCapacity();
+        String[] smallerHashTable = new String[getCapacity()];
+        for (int i =0; i< hashTable.length; i++){
+            if (hashTable[i] != null && !hashTable[i].equals("")){
+                smallerHashTable[emptyIndex(hashTable[i], smallerHashTable)] = hashTable[i];
+            }
+        }
+        hashTable = smallerHashTable;
     }
 
 

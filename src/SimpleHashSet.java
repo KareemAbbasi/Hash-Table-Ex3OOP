@@ -3,7 +3,6 @@ public abstract class SimpleHashSet implements SimpleSet {
     protected final float DEFAULT_UPPER_LOAD_FACTOR = 0.75f;
     protected final float DEFAULT_LOWER_LOAD_FACTOR = 0.25f;
 
-    protected int capacityMinusOne = DEFAULT_CAPACITY -1;
     protected int capacity;
     protected float upperLoadFactor;
     protected float lowerLoadFactor;
