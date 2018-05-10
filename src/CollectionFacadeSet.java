@@ -1,5 +1,4 @@
 public class CollectionFacadeSet implements SimpleSet {
-
     protected java.util.Collection<java.lang.String> collection;
 
     CollectionFacadeSet(java.util.Collection<java.lang.String> collection) {
@@ -8,11 +7,11 @@ public class CollectionFacadeSet implements SimpleSet {
 
     @Override
     public boolean add(String newValue) {
-        if (!collection.contains(newValue)){
+        if (!collection.contains(newValue)) {
             return collection.add(newValue);
-        } else {
-            return false;
         }
+        return false;
+
     }
 
     @Override
