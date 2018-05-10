@@ -27,7 +27,7 @@ public abstract class SimpleHashSet implements SimpleSet {
     }
 
     protected void decreaseTableCapacity() {
-        if (capacity != 1) {
+        if (capacity > 1) {
             capacity /=2;
         }
     }

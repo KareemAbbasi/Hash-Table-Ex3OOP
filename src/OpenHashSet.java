@@ -5,16 +5,15 @@ import java.util.TreeSet;
 
 public class OpenHashSet extends SimpleHashSet {
 
-    TreeSetFacade[] hashTable;
+    private TreeSetFacade[] hashTable;
 
     private int tableSize;
 
 
     public OpenHashSet() {
         hashTable = new TreeSetFacade[capacity()];
+        initHashTable(hashTable);
         tableSize = 0;
-        this.upperLoadFactor = DEFAULT_UPPER_LOAD_FACTOR;
-        this.lowerLoadFactor = DEFAULT_LOWER_LOAD_FACTOR;
     }
 
     public OpenHashSet(float upperLoadFactor, float lowerLoadFactor){
@@ -24,6 +23,7 @@ public class OpenHashSet extends SimpleHashSet {
     }
 
     public OpenHashSet(java.lang.String[] data){
+        this();
         for (int i=0; i< data.length; i++){
             add(data[i]);
         }
@@ -38,7 +38,7 @@ public class OpenHashSet extends SimpleHashSet {
 
     @Override
     int clamp(int index) {
-        return index & (tableSize-1);
+        return index & (capacity()-1);
     }
 
     @Override
@@ -48,35 +48,55 @@ public class OpenHashSet extends SimpleHashSet {
         }
 
         if (getUpperLoadFactor() < (float)(tableSize/capacity())){
-            biggerHashTable();
+            resizeTable(true);
         }
 
+        int index = newValue.hashCode();
+        int clampedIndex = clamp(index);
 
+        if(hashTable[clampedIndex] == null){
+            hashTable[clampedIndex] = new TreeSetFacade(new TreeSet<String>());
+        }
+
+        if (hashTable[clampedIndex].add(newValue)){
+            tableSize++;
+            return true;
+        }
+        return false;
     }
 
-    private void biggerHashTable(){
-        increaseTableCapacity();
-        TreeSetFacade[] bigHashTable = new TreeSetFacade[capacity()];
-        initHashTable(bigHashTable);
-        for (int i = 0; i< hashTable.length; i++){
+    private void resizeTable(boolean increase) {
+        if (increase){
+            increaseTableCapacity();
+        } else {
+            decreaseTableCapacity();
+        }
+
+        TreeSetFacade[] newTable = new TreeSetFacade[capacity()];
+        initHashTable(newTable);
+
+        for (int i=0; i<hashTable.length; i++){
             if (hashTable[i] != null){
                 for (Iterator iter = hashTable[i].getIter(); iter.hasNext();){
                     String currentString = iter.next().toString();
                     int currentIndex = currentString.hashCode();
                     int clampedIndex = clamp(currentIndex);
 
-                    if(bigHashTable[clampedIndex] == null){
-                        bigHashTable[clampedIndex] = new TreeSetFacade(new TreeSet<String>());
+                    if (newTable[clampedIndex] == null){
+                        newTable[clampedIndex] = new TreeSetFacade(new TreeSet<String>());
                     }
-                    bigHashTable[clampedIndex].add(currentString);
+
+                    newTable[clampedIndex].add(currentString);
                 }
             }
         }
+
+        hashTable = newTable;
     }
 
     @Override
     public boolean contains(String searchVal) {
-        for(int i =0; i<hashTable.length; i++){
+        for (int i=0; i< hashTable.length; i++) {
             if (hashTable[i] != null && hashTable[i].contains(searchVal)){
                 return true;
             }
@@ -86,6 +106,17 @@ public class OpenHashSet extends SimpleHashSet {
 
     @Override
     public boolean delete(String toDelete) {
+        if (getLowerLoadFactor() > (float)(tableSize/capacity())){
+            resizeTable(false);
+        }
+        for (int i = 0; i< hashTable.length; i++) {
+            if (hashTable[i] != null && hashTable[i].contains(toDelete)){
+                if (hashTable[i].delete(toDelete)){
+                    tableSize --;
+                    return true;
+                }
+            }
+        }
         return false;
     }
 

@@ -43,8 +43,8 @@ public class ClosedHashSet extends SimpleHashSet {
             return false;
         }
 
-        if (getUpperLoadFactor() < (float)(tableSize/capacity)){
-            biggerHashTable();
+        if (getUpperLoadFactor() < (float)(tableSize/capacity())){
+            resizeTable(true);
         }
 
         int newValueIndex = findEmptyIndex();
@@ -64,21 +64,39 @@ public class ClosedHashSet extends SimpleHashSet {
         return index;
     }
 
-    private void biggerHashTable(){
-        increaseTableCapacity();
-        String[] newTable = new String[capacity()];
-        for(int i =0; i<capacityMinusOne; i++){
-            if(hashTable[i] != null && !hashTable[i].equals("")){
-                int valueIndex = hashTable[i].hashCode();
-                int clampedIndex = clamp(valueIndex);
-                newTable[clampedIndex] = hashTable[i];
-            }
-        }
-        hashTable = newTable;
-    }
+//    private void biggerHashTable(){
+//        increaseTableCapacity();
+//        String[] newTable = new String[capacity()];
+//        for(int i =0; i<capacityMinusOne; i++){
+//            if(hashTable[i] != null && !hashTable[i].equals("")){
+//                int valueIndex = hashTable[i].hashCode();
+//                int clampedIndex = clamp(valueIndex);
+//                newTable[clampedIndex] = hashTable[i];
+//            }
+//        }
+//        hashTable = newTable;
+//    }
+//
+//    private void smallerHashTable() {
+//        decreaseTableCapacity();
+//        String[] newTable = new String[capacity()];
+//        for (int i = 0; i < hashTable.length; i++) {
+//            if (!(hashTable[i] == null || hashTable[i].equals(""))) {
+//                int valueIndex = hashTable[i].hashCode();
+//                int clampedIndex = clamp(valueIndex);
+//                newTable[clampedIndex] = hashTable[i];
+//            }
+//            hashTable = newTable;
+//        }
+//    }
 
-    private void smallerHashTable() {
-        decreaseTableCapacity();
+    private void resizeTable(boolean increase){
+        if (increase){
+            increaseTableCapacity();
+        } else {
+            decreaseTableCapacity();
+        }
+
         String[] newTable = new String[capacity()];
         for (int i = 0; i < hashTable.length; i++) {
             if (!(hashTable[i] == null || hashTable[i].equals(""))) {
@@ -86,8 +104,8 @@ public class ClosedHashSet extends SimpleHashSet {
                 int clampedIndex = clamp(valueIndex);
                 newTable[clampedIndex] = hashTable[i];
             }
-            hashTable = newTable;
         }
+        hashTable = newTable;
     }
 
     @Override
@@ -109,10 +127,11 @@ public class ClosedHashSet extends SimpleHashSet {
         for (int i=0; i<capacity(); i++){
             if (hashTable[i]!= null && hashTable[i].equals(toDelete)){
                 hashTable[i] = "";
-                tableSize--;
-                if (getLowerLoadFactor() > (float)(tableSize/capacity)){
-                    smallerHashTable();
+
+                if (getLowerLoadFactor() > (float)(tableSize/capacity())){
+                    resizeTable(false);
                 }
+                tableSize--;
                 return true;
             }
         }
