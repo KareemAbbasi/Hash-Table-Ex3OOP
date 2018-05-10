@@ -1,15 +1,15 @@
-public class ClosedHashSet extends SimpleHashSet{
+public class ClosedHashSet extends SimpleHashSet {
 
     String[] hashTable;
-    int tableSize;
-    float loadFactor = tableSize/capacity;
+    private int tableSize;
+
+
 
     public ClosedHashSet(){
-        hashTable = new String[DEFAULT_CAPACITY];
+        hashTable = new String[capacity()];
         tableSize = 0;
         upperLoadFactor = DEFAULT_UPPER_LOAD_FACTOR;
         lowerLoadFactor = DEFAULT_LOWER_LOAD_FACTOR;
-
     }
 
     public ClosedHashSet(float upperLoadFactor, float lowerLoadFactor){
@@ -18,36 +18,23 @@ public class ClosedHashSet extends SimpleHashSet{
         this.lowerLoadFactor = lowerLoadFactor;
     }
 
-    public ClosedHashSet(java.lang.String[] data){
+    public ClosedHashSet(java.lang.String[] data) {
         this();
-        for (int i=0; i< data.length; i++) {
+        for (int i=0; i<data.length; i++){
             add(data[i]);
         }
     }
-    public int clamp(String value, int i) {
-        return (value.hashCode()+(i + i*i)/2)&(capacity - 1);
-    }
-    private int findIndex(String value){
-        for (int i =0; i<hashTable.length; i++){
-            int index = clamp(value, i);
-            if(hashTable[index] == null || index > capacity()) {
-                return -1;
-            } else if (hashTable[index].equals(value)){
-                return index;
-            }
-        }
-        return -1;
-    }
 
-    private int emptyIndex(String value, String[] table){
-        int index = clamp(value, 0);
-        for (int i=0; i< table.length; i++){
-            index = clamp(value ,i);
-            if (table[index] == null || table[index].equals("")){
-                return index;
+    @Override
+    int clamp(int index) {
+        int clampedIndex = index;
+        for (int i=0; i< capacity(); i++) {
+            clampedIndex = (index + (i+i*i)/2) & (tableSize-1);
+            if (hashTable[clampedIndex] == null || hashTable[clampedIndex].equals("")){
+                break;
             }
         }
-        return index;
+        return clampedIndex;
     }
 
     @Override
@@ -56,63 +43,85 @@ public class ClosedHashSet extends SimpleHashSet{
             return false;
         }
 
-        if (upperLoadFactor < loadFactor){
-            biggerTable();
+        if (getUpperLoadFactor() < (float)(tableSize/capacity)){
+            biggerHashTable();
         }
-        int newValueIndex = emptyIndex(newValue, hashTable);
+
+        int newValueIndex = findEmptyIndex();
         hashTable[newValueIndex] = newValue;
-        tableSize++;
+        tableSize ++;
 
         return true;
+    }
+
+    private int findEmptyIndex(){
+        int index = 0;
+        for(int i=0; i<capacity(); i++){
+            if (hashTable[i] == null || hashTable[i].equals("")){
+                index = i;
+            }
+        }
+        return index;
+    }
+
+    private void biggerHashTable(){
+        increaseTableCapacity();
+        String[] newTable = new String[capacity()];
+        for(int i =0; i<capacityMinusOne; i++){
+            if(hashTable[i] != null && !hashTable[i].equals("")){
+                int valueIndex = hashTable[i].hashCode();
+                int clampedIndex = clamp(valueIndex);
+                newTable[clampedIndex] = hashTable[i];
+            }
+        }
+        hashTable = newTable;
+    }
+
+    private void smallerHashTable() {
+        decreaseTableCapacity();
+        String[] newTable = new String[capacity()];
+        for (int i = 0; i < hashTable.length; i++) {
+            if (!(hashTable[i] == null || hashTable[i].equals(""))) {
+                int valueIndex = hashTable[i].hashCode();
+                int clampedIndex = clamp(valueIndex);
+                newTable[clampedIndex] = hashTable[i];
+            }
+            hashTable = newTable;
+        }
     }
 
     @Override
     public boolean contains(String searchVal) {
-        int searchValIndex = findIndex(searchVal);
-        return (searchValIndex != -1);
+        for(int i=0; i<capacity(); i++){
+            if (hashTable[i] != null && hashTable[i].equals(searchVal)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     public boolean delete(String toDelete) {
-        int toDeleteIndex = findIndex(toDelete);
-        if (toDeleteIndex == -1){
+        if (!contains(toDelete)){
             return false;
         }
-        hashTable[toDeleteIndex] = "";
-        tableSize --;
 
-        if (getLowerLoadFactor() > loadFactor){
-            smallerTable();
+        for (int i=0; i<capacity(); i++){
+            if (hashTable[i]!= null && hashTable[i].equals(toDelete)){
+                hashTable[i] = "";
+                tableSize--;
+                if (getLowerLoadFactor() > (float)(tableSize/capacity)){
+                    smallerHashTable();
+                }
+                return true;
+            }
         }
-        return true;
+        return false;
+
     }
 
     @Override
     public int size() {
         return tableSize;
     }
-
-    public void biggerTable(){
-        increaseTableCapacity();
-        String[] biggerHashTable = new String[capacity()];
-        for (int i=0; i<hashTable.length; i++){
-            if (!(hashTable[i] == null || hashTable[i].equals(""))){
-                biggerHashTable[emptyIndex(hashTable[i], biggerHashTable)] = hashTable[i];
-            }
-        }
-        hashTable = biggerHashTable;
-    }
-
-    public void smallerTable(){
-        decreaseTableCapacity();
-        String[] smallerHashTable = new String[capacity()];
-        for (int i =0; i< hashTable.length; i++){
-            if (hashTable[i] != null && !hashTable[i].equals("")){
-                smallerHashTable[emptyIndex(hashTable[i], smallerHashTable)] = hashTable[i];
-            }
-        }
-        hashTable = smallerHashTable;
-    }
-
-
 }

@@ -1,15 +1,20 @@
-import java.util.LinkedList;
-import java.util.ListIterator;
+import sun.reflect.generics.tree.Tree;
+
+import java.util.Iterator;
+import java.util.TreeSet;
 
 public class OpenHashSet extends SimpleHashSet {
 
-    private LinkedListFacade[] hashTable;
+    TreeSetFacade[] hashTable;
+
     private int tableSize;
 
-    public OpenHashSet(){
-        hashTable = new LinkedListFacade[capacity()];
+
+    public OpenHashSet() {
+        hashTable = new TreeSetFacade[capacity()];
         tableSize = 0;
-        initHashTable(hashTable);
+        this.upperLoadFactor = DEFAULT_UPPER_LOAD_FACTOR;
+        this.lowerLoadFactor = DEFAULT_LOWER_LOAD_FACTOR;
     }
 
     public OpenHashSet(float upperLoadFactor, float lowerLoadFactor){
@@ -19,52 +24,64 @@ public class OpenHashSet extends SimpleHashSet {
     }
 
     public OpenHashSet(java.lang.String[] data){
-        this();
         for (int i=0; i< data.length; i++){
             add(data[i]);
         }
     }
 
-    private void initHashTable(LinkedListFacade[] hashTable){
-        for(int i=0; i<hashTable.length; i++){
-            hashTable[i] = new LinkedListFacade(new LinkedList<String>());
+    private void initHashTable(TreeSetFacade[] table) {
+        for (int i=0; i< table.length; i++) {
+            table[i] = new TreeSetFacade(new TreeSet<String>());
         }
     }
 
-    protected int clamp(String value){
-        return value.hashCode()&(capacity()-1);
+
+    @Override
+    int clamp(int index) {
+        return index & (tableSize-1);
     }
 
     @Override
     public boolean add(String newValue) {
-        int index = clamp(newValue);
-
-        if (hashTable[index] == null) {
-            hashTable[index] = new LinkedListFacade(new LinkedList<String>());
+        if (contains(newValue)){
+            return false;
         }
 
-        boolean didAdd = false;
+        if (getUpperLoadFactor() < (float)(tableSize/capacity())){
+            biggerHashTable();
+        }
 
-        didAdd = hashTable[index].add(newValue);
 
-        if (didAdd){
-            tableSize++;
-            if (getUpperLoadFactor() < (float)tableSize / (float)capacity()){
-                biggerHashTable();
+    }
+
+    private void biggerHashTable(){
+        increaseTableCapacity();
+        TreeSetFacade[] bigHashTable = new TreeSetFacade[capacity()];
+        initHashTable(bigHashTable);
+        for (int i = 0; i< hashTable.length; i++){
+            if (hashTable[i] != null){
+                for (Iterator iter = hashTable[i].getIter(); iter.hasNext();){
+                    String currentString = iter.next().toString();
+                    int currentIndex = currentString.hashCode();
+                    int clampedIndex = clamp(currentIndex);
+
+                    if(bigHashTable[clampedIndex] == null){
+                        bigHashTable[clampedIndex] = new TreeSetFacade(new TreeSet<String>());
+                    }
+                    bigHashTable[clampedIndex].add(currentString);
+                }
             }
         }
-
-        return didAdd;
     }
 
     @Override
     public boolean contains(String searchVal) {
-        int index = clamp(searchVal);
-        if (hashTable[index] != null){
-            return hashTable[index].contains(searchVal);
-        } else {
-            return false;
+        for(int i =0; i<hashTable.length; i++){
+            if (hashTable[i] != null && hashTable[i].contains(searchVal)){
+                return true;
+            }
         }
+        return false;
     }
 
     @Override
@@ -74,48 +91,7 @@ public class OpenHashSet extends SimpleHashSet {
 
     @Override
     public int size() {
-        return 0;
-    }
-
-    private void biggerHashTable(){
-        increaseTableCapacity();
-        LinkedListFacade[] bigHashTable = new LinkedListFacade[capacity()];
-        initHashTable(bigHashTable);
-
-        for(int i=0; i<hashTable.length; i++){
-            if (hashTable[i] != null) {
-                for (ListIterator iter = hashTable[i].getIterator(); iter.hasNext();){
-                    String value = iter.next().toString();
-                    int index = clamp(value);
-                    if (bigHashTable[index] == null){
-                        bigHashTable[index] = new LinkedListFacade(new LinkedList<String>());
-                    }
-                    bigHashTable[index].add(value);
-                }
-            }
-        }
-        hashTable = bigHashTable;
-    }
-
-    private void smallerHashTable(){
-        decreaseTableCapacity();
-        LinkedListFacade[] smallHashTable = new LinkedListFacade[capacity()];
-        initHashTable(smallHashTable);
-
-        for (int i=0; i<hashTable.length; i++){
-            if (hashTable[i] != null){
-                for(ListIterator iter = hashTable[i].getIterator(); iter.hasNext();){
-                    String value = iter.next().toString();
-                    int index = clamp(value);
-                    if (smallHashTable[index] ==null){
-                        smallHashTable[index] = new LinkedListFacade(new LinkedList<String>());
-                    }
-
-                    smallHashTable[index].add(value);
-                }
-            }
-        }
-        hashTable = smallHashTable;
+        return tableSize;
     }
 
 }

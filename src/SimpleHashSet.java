@@ -1,14 +1,15 @@
 public abstract class SimpleHashSet implements SimpleSet {
-    protected final int DEFAULT_CAPACITY = 16;
+    protected final int INITIAL_CAPACITY = 16;
     protected final float DEFAULT_UPPER_LOAD_FACTOR = 0.75f;
     protected final float DEFAULT_LOWER_LOAD_FACTOR = 0.25f;
 
     protected int capacity;
+    protected int capacityMinusOne = capacity-1;
     protected float upperLoadFactor;
     protected float lowerLoadFactor;
 
     public SimpleHashSet(){
-        this.capacity = DEFAULT_CAPACITY;
+        this.capacity = INITIAL_CAPACITY;
         this.upperLoadFactor = DEFAULT_UPPER_LOAD_FACTOR;
         this.lowerLoadFactor = DEFAULT_LOWER_LOAD_FACTOR;
     }
@@ -34,6 +35,9 @@ public abstract class SimpleHashSet implements SimpleSet {
     protected int capacity(){
         return capacity;
     }
+
+    abstract int clamp(int index);
+
 
 
 
