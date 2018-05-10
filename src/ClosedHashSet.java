@@ -1,5 +1,5 @@
 public class ClosedHashSet extends SimpleHashSet {
-    private String[] hashTable;
+    public String[] hashTable;
     private int tableSize;
 
 
@@ -41,23 +41,6 @@ public class ClosedHashSet extends SimpleHashSet {
         }
     }
 
-    /*
-    receives the hash code for a value and clamps it to an index that is in the range of the table size.
-     */
-    @Override
-    int clamp(int index) {
-        int clampedIndex = index;
-        for (int i = 0; i < capacity(); i++) {
-            clampedIndex = (index + (i + i * i) / 2) & (tableSize - 1);
-            if (clampedIndex < capacity()-1) {
-                if (hashTable[clampedIndex] == null || "".equals(hashTable[clampedIndex])) {
-
-                    break;
-                }
-            }
-        }
-        return clampedIndex;
-    }
 
     /**
      * Add a specified element to the set if it's not already in it.
@@ -70,7 +53,7 @@ public class ClosedHashSet extends SimpleHashSet {
             return false;
         }
 
-        if (getUpperLoadFactor() < ((float) (tableSize) /capacity())) {
+        if (getUpperLoadFactor() < ((float) (tableSize) /(float)capacity()-1)) {
             resizeTable(true);
         }
 
@@ -149,7 +132,7 @@ public class ClosedHashSet extends SimpleHashSet {
             if (hashTable[i] != null && hashTable[i].equals(toDelete)) {
                 hashTable[i] = "";
 
-                if (getLowerLoadFactor() > ((float) tableSize / (float) capacity())) {
+                if (getLowerLoadFactor() >= ((float) tableSize / (float) capacity())) {
                     resizeTable(false);
                 }
 

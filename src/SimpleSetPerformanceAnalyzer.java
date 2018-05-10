@@ -4,8 +4,9 @@ import java.util.TreeSet;
 
 public class SimpleSetPerformanceAnalyzer {
 
-    private final String DATA1_PATH = "/cs/usr/kareem/Desktop/ex3OOP/ex3OOP/src/data1.txt";
-    private final String DATA2_PATH = "/cs/usr/kareem/Desktop/ex3OOP/ex3OOP/src/data2.txt";
+    private final String DATA1_PATH = "C:/Users/owner/Desktop/ooop3/ex3OOP/src/data1.txt";
+    private final String DATA2_PATH = "C:/Users/owner/Desktop/ooop3/ex3OOP/src/data2.txt";
+    private final int WARM_UP_ROUNDS = 7000;
 
     private ClosedHashSet closedHashSet;
     private OpenHashSet openHashSet;
@@ -74,6 +75,7 @@ public class SimpleSetPerformanceAnalyzer {
         System.out.printf("It took %d\n to find %s\n in %s\n", timeAfter, value, set.toString());
     }
 
+
     private void checkContainsAllSets(String value){
         checkContainsSingleSet(value, closedHashSet);
         checkContainsSingleSet(value, openHashSet);
@@ -87,6 +89,17 @@ public class SimpleSetPerformanceAnalyzer {
     public static void main(String[] args) {
         SimpleSetPerformanceAnalyzer tester = new SimpleSetPerformanceAnalyzer();
         tester.startTest();
+    }
+
+    private void checkWarmUp(){
+
+        for (int i=0; i<WARM_UP_ROUNDS; i++) {
+            long timeBefore = System.nanoTime();
+            checkContainsSingleSet("hi", treeSet);
+            long timeAfter = System.nanoTime() - timeBefore;
+            System.out.println(timeAfter);
+        }
+
     }
 
 

@@ -1,5 +1,3 @@
-import sun.reflect.generics.tree.Tree;
-
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -55,13 +53,6 @@ public class OpenHashSet extends SimpleHashSet {
     }
 
 
-    /*
-    receives the hash code for a value and clamps it to an index that is in the range of the table size.
-     */
-    @Override
-    int clamp(int index) {
-        return index & (capacity() - 1);
-    }
 
     /**
      * Add a specified element to the set if it's not already in it.
