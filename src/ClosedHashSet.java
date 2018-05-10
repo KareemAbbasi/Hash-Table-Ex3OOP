@@ -30,7 +30,7 @@ public class ClosedHashSet extends SimpleHashSet{
     private int findIndex(String value){
         for (int i =0; i<hashTable.length; i++){
             int index = clamp(value, i);
-            if(hashTable[index] == null || index > getCapacity()) {
+            if(hashTable[index] == null || index > capacity()) {
                 return -1;
             } else if (hashTable[index].equals(value)){
                 return index;
@@ -89,12 +89,12 @@ public class ClosedHashSet extends SimpleHashSet{
 
     @Override
     public int size() {
-        return 0;
+        return tableSize;
     }
 
     public void biggerTable(){
         increaseTableCapacity();
-        String[] biggerHashTable = new String[getCapacity()];
+        String[] biggerHashTable = new String[capacity()];
         for (int i=0; i<hashTable.length; i++){
             if (!(hashTable[i] == null || hashTable[i].equals(""))){
                 biggerHashTable[emptyIndex(hashTable[i], biggerHashTable)] = hashTable[i];
@@ -105,7 +105,7 @@ public class ClosedHashSet extends SimpleHashSet{
 
     public void smallerTable(){
         decreaseTableCapacity();
-        String[] smallerHashTable = new String[getCapacity()];
+        String[] smallerHashTable = new String[capacity()];
         for (int i =0; i< hashTable.length; i++){
             if (hashTable[i] != null && !hashTable[i].equals("")){
                 smallerHashTable[emptyIndex(hashTable[i], smallerHashTable)] = hashTable[i];

@@ -60,7 +60,7 @@ public class Ex3Utils {
 			}
 		}
 
-		// Convert the list to an array and return the array
+		// Convert the list to SimpleSetPerformanceAnalyzer array and return the array
 		String[] result = new String[fileContent.size()];
 		fileContent.toArray(result);
 		return result;

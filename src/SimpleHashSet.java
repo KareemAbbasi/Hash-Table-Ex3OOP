@@ -31,7 +31,7 @@ public abstract class SimpleHashSet implements SimpleSet {
         }
     }
 
-    protected int getCapacity(){
+    protected int capacity(){
         return capacity;
     }
 
