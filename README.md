@@ -1,5 +1,3 @@
-Kareem Abbasi
-
 # Hash Table implemenation using Java
 A simple implementation of Hash Tables using java.
 
